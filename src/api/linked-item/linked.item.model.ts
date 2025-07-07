@@ -5,7 +5,7 @@ const linkedItemSchema = new mongoose.Schema<LinkedItem>({
   adminAction: { type: String, required: true },
   date: { type: Date },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  baseItemId: { type: mongoose.Schema.Types.ObjectId, ref: "base-item", required: true },
+  baseItemId: { type: mongoose.Schema.Types.ObjectId, ref: "base-items", required: true },
 });
 
 // Configurazioni per la serializzazione

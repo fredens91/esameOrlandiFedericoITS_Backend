@@ -6,18 +6,34 @@ import { TypedRequest } from "../../utils/typed-request.interface";
 import { User } from "../user/user.entity";
 import { UserModel } from "../user/user.model";
 
+// export const list = async (
+//   req: TypedRequest<unknown, User>,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const linkedItems = await linkedItemService.list(req.user!);
+//     res.status(200).json(linkedItems);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
 export const list = async (
   req: TypedRequest<unknown, User>,
   res: Response,
   next: NextFunction
 ) => {
   try {
+    console.log("✅ req.user:", req.user);
     const linkedItems = await linkedItemService.list(req.user!);
     res.status(200).json(linkedItems);
   } catch (err) {
+    console.error("🔥 Errore nel controller:", err);
     next(err);
   }
 };
+
 
 export const findOne = async (
   req: Request,

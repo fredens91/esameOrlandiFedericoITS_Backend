@@ -30,4 +30,4 @@ baseItemSchema.set("toObject", {
 });
 
 // Esportazione del modello Mongoose
-export const BaseItemModel = mongoose.model<BaseItem>("base-item", baseItemSchema);
+export const BaseItemModel = mongoose.model<BaseItem>("base-items", baseItemSchema);

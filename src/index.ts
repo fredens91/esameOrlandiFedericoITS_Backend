@@ -5,6 +5,8 @@ import { requireEnvVars } from "./utils/dotenv";
 
 const [MONGO_URI, PORT] = requireEnvVars(["MONGO_URI", "PORT"]);
 
+// console.log('Connecting to MongoDB with URI:', MONGO_URI);
+
 mongoose.set("debug", false);
 mongoose
   .connect(MONGO_URI, {})

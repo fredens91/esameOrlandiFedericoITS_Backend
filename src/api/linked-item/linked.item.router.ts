@@ -3,9 +3,9 @@ import {
   list,
   findOne,
   create,
-  adminAction,
   remove,
-  getSingleEventSubs
+  getSingleEventSubs,
+  updateLinkedItem
 } from './linked.item.controller';
 
 import { isAuthenticated } from "../../utils/auth/authenticated-middleware";
@@ -22,8 +22,7 @@ router.get('/:id', findOne);
 
 router.post('/', create);
 
-router.put('/:id', adminAction);
-// router.put('/:id', update);
+router.patch("/:id", updateLinkedItem);
 
 router.delete('/:id', remove);
 

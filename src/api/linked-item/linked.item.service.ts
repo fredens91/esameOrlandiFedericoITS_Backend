@@ -57,33 +57,38 @@ export class LinkedItemService {
 
   // CUSTOM
 
-async getSingleEventSubs(eventId: string): Promise<LinkedItem[]> {
-  const linkedItems = await linkedItemModel
-    .find({ baseItemId: eventId })
-    .populate('userId', 'firstName lastName'); // <-- Popola solo questi campi
+  async getSingleEventSubs(eventId: string): Promise<LinkedItem[]> {
+    const linkedItems = await linkedItemModel
+      .find({ baseItemId: eventId })
+      .populate("userId", "firstName lastName"); // <-- Popola solo questi campi
 
-  if (!linkedItems || linkedItems.length === 0) {
-    throw new Error('No linked items found for this event');
+    if (!linkedItems || linkedItems.length === 0) {
+      throw new Error("No linked items found for this event");
+    }
+
+    return linkedItems;
   }
 
-  return linkedItems;
-}
+  async update(
+    user: User,
+    id: string,
+    updateData: Partial<LinkedItem>
+  ): Promise<LinkedItem | null> {
+    const linkedItem = await linkedItemModel.findById(id);
+    if (!linkedItem) return null;
 
+    // Controllo autorizzazione
+    if (user.role !== "admin" && linkedItem.userId.toString() !== user.id) {
+      return null;
+    }
 
-  // async update(user: User, id: string, updateData: Partial<LinkedItem>): Promise<LinkedItem | null> {
-  //   const linkedItem = await linkedItemModel.findById(id);
-  //   if (!linkedItem) return null;
-
-  //   if (user.role !== "admin" && linkedItem.userId.toString() !== user.id) {
-  //     return null;
-  //   }
-
-  //   return await linkedItemModel.findByIdAndUpdate(
-  //     id,
-  //     { $set: updateData },
-  //     { new: true }
-  //   );
-  // }
+    // Aggiornamento
+    return await linkedItemModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    );
+  }
 
   async remove(user: User, id: string): Promise<boolean> {
     const linkedItem = await linkedItemModel.findById(id);

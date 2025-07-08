@@ -104,46 +104,67 @@ export const create = async (
   }
 };
 
-export const adminAction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+// export const adminAction = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const linkedItemId = req.params.id;
+//     const { adminAction, date, userId, baseItemId } = req.body;
+//     const user = req.user!;
+//     const baseItem = await BaseItemModel.findById(baseItemId); // Usa BaseItemModel qui
+
+//     if (!user) {
+//       return res.status(401).json({ message: "User not authenticated" });
+//     }
+//     if (!baseItem) {
+//       return res.status(404).json({ message: "Base item not found" });
+//     }
+
+//     const userIdToSave = typeof userId === "object" ? userId.id : userId;
+//     const baseItemIdToSave =
+//       typeof baseItemId === "object" ? baseItemId.id : baseItemId;
+
+//     const updatedLinkedItem = await linkedItemService.adminAction(
+//       user,
+//       linkedItemId,
+//       {
+//         adminAction,
+//         date,
+//         userId: userIdToSave,
+//         baseItemId: baseItemIdToSave,
+//       }
+//     );
+
+//     if (!updatedLinkedItem) {
+//       return res.status(404).send("linked item not found");
+//     }
+
+//     res.status(200).json(updatedLinkedItem);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+export const updateLinkedItem = async (req: Request, res: Response) => {
   try {
-    const linkedItemId = req.params.id;
-    const { adminAction, date, userId, baseItemId } = req.body;
-    const user = req.user!;
-    const baseItem = await BaseItemModel.findById(baseItemId); // Usa BaseItemModel qui
+    const id = req.params.id;
+    const updateData = req.body;
 
-    if (!user) {
-      return res.status(401).json({ message: "User not authenticated" });
-    }
-    if (!baseItem) {
-      return res.status(404).json({ message: "Base item not found" });
-    }
+    // Assumiamo che `req.user` sia stato valorizzato da un middleware auth
+    const user = req.user as User;
 
-    const userIdToSave = typeof userId === "object" ? userId.id : userId;
-    const baseItemIdToSave =
-      typeof baseItemId === "object" ? baseItemId.id : baseItemId;
+    const updated = await linkedItemService.update(user, id, updateData);
 
-    const updatedLinkedItem = await linkedItemService.adminAction(
-      user,
-      linkedItemId,
-      {
-        adminAction,
-        date,
-        userId: userIdToSave,
-        baseItemId: baseItemIdToSave,
-      }
-    );
-
-    if (!updatedLinkedItem) {
-      return res.status(404).send("linked item not found");
+    if (!updated) {
+      return res.status(403).json({ message: "Non autorizzato o elemento non trovato." });
     }
 
-    res.status(200).json(updatedLinkedItem);
-  } catch (err) {
-    next(err);
+    return res.status(200).json(updated);
+  } catch (error) {
+    console.error("Errore nel controller:", error);
+    return res.status(500).json({ message: "Errore del server." });
   }
 };
 

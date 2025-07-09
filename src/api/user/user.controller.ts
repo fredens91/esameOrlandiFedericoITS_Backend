@@ -64,7 +64,6 @@ export const changeRoleToAdmin = async (
   }
 };
 
-
 export const me = async (
   req: TypedRequest,
   res: Response,

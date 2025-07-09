@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { User } from "../user/user.entity";
 import { LinkedItem } from "./linked.item.entity";
 import { linkedItemModel } from "./linked.item.model";
@@ -42,18 +43,19 @@ export class LinkedItemService {
     return await linkedItemModel.create(newLinkedItem);
   }
 
-  async list(user: User): Promise<LinkedItem[]> {
-    if (user.role === "admin") {
-      return await linkedItemModel.find();
-    }
-
-    return await linkedItemModel.find({
-      $or: [{ userIdA: user.id }, { userIdB: user.id }],
-    });
+  async list(): Promise<LinkedItem[]> {
+    return await linkedItemModel
+      .find() // Nessun filtro aggiuntivo
+      .populate("userIdA", "firstName lastName")
+      .populate("userIdB", "firstName lastName");
   }
 
   async findOne(user: User, id: string): Promise<LinkedItem | null> {
-    const linkedItem = await linkedItemModel.findById(id);
+    const linkedItem = await linkedItemModel
+      .findById(id)
+      .populate("userIdA", "firstName lastName")
+      .populate("userIdB", "firstName lastName");
+
     if (!linkedItem) return null;
 
     const isAuthorized =
@@ -79,20 +81,18 @@ export class LinkedItemService {
 
     if (!isAuthorized) return null;
 
-    return await linkedItemModel.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true }
-    );
+    return await linkedItemModel
+      .findByIdAndUpdate(id, { $set: updateData }, { new: true })
+      .populate("userIdA", "firstName lastName")
+      .populate("userIdB", "firstName lastName");
   }
 
-async remove(user: User, id: string): Promise<boolean> {
-  if (user.role !== "admin") return false;
+  async remove(user: User, id: string): Promise<boolean> {
+    if (user.role !== "admin") return false;
 
-  const result = await linkedItemModel.deleteOne({ _id: id });
-  return result.deletedCount > 0;
-}
-
+    const result = await linkedItemModel.deleteOne({ _id: id });
+    return result.deletedCount > 0;
+  }
 
   async getSingleEventSubs(eventId: string): Promise<LinkedItem[]> {
     const linkedItems = await linkedItemModel

@@ -12,7 +12,7 @@ export const create = async (
   next: NextFunction
 ) => {
   try {
-    const { userIdA, userIdB } = req.body;
+    const { userIdA, userIdB, scoreA = 0, scoreB = 0, isPlayed = false } = req.body;
 
     if (!userIdA || !userIdB) {
       return res.status(400).json({ message: "Missing userIdA or userIdB" });
@@ -38,6 +38,9 @@ export const create = async (
     const newLinkedItem = await linkedItemService.create(req.user!, {
       userIdA,
       userIdB,
+      scoreA,
+      scoreB,
+      isPlayed
     });
 
     res.status(201).json(newLinkedItem);
@@ -53,13 +56,16 @@ export const list = async (
 ) => {
   try {
     console.log("✅ req.user:", req.user);
-    const linkedItems = await linkedItemService.list(req.user!);
+    // Recupera tutte le risorse senza filtro sul creatore
+    const linkedItems = await linkedItemService.list();
     res.status(200).json(linkedItems);
   } catch (err) {
     console.error("🔥 Errore nel controller:", err);
     next(err);
   }
 };
+
+
 
 export const findOne = async (
   req: Request,

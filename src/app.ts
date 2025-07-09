@@ -8,13 +8,12 @@ import "./utils/auth/auth-handlers";
 
 const app = express();
 
-// app.use(cors({
-//   origin: [
-//   'http://localhost:4200',
-//   'https://esameorlandifedericoits-frontend.onrender.com'
-// ],
-//   credentials: true,
-// }));
+// Abilita CORS per tutte le richieste
+app.use(cors({
+  origin: 'http://localhost:4200', // Permetti solo il client Angular da localhost:4200
+  methods: 'GET,POST,PUT,DELETE', // I metodi HTTP permessi
+  allowedHeaders: 'Content-Type,Authorization' // Gli headers permessi
+}));
 
 app.use(morgan("tiny"));
 app.use(bodyParser.json());

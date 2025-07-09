@@ -75,7 +75,6 @@ export class UserService {
   return user;
 }
 
-
   async updatePassword(
     user: User,
     newPassword: string,

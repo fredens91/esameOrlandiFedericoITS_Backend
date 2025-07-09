@@ -9,7 +9,6 @@ import {
 import { HydratedDocument } from "mongoose";
 
 export class UserService {
-  
   async add(
     user: User,
     credentials: { username: string; password: string }
@@ -40,6 +39,42 @@ export class UserService {
     const userList = await UserModel.find();
     return userList;
   }
+
+  async listSubscribed(): Promise<User[]> {
+    const subscribedUsers = await UserModel.find({ isSubscribed: true });
+    return subscribedUsers;
+  }
+
+  async subscribeToTournament(userId: string): Promise<User> {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Imposta 'isSubscribed' a true
+    user.isSubscribed = true;
+    await user.save();
+
+    return user;
+  }
+
+  async changeRoleToAdmin(userId: string): Promise<User> {
+  const user = await UserModel.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.role === "admin") {
+    throw new Error("User is already an admin");
+  }
+
+  // Cambia il ruolo a "admin"
+  user.role = "admin";
+  await user.save();
+
+  return user;
+}
+
 
   async updatePassword(
     user: User,

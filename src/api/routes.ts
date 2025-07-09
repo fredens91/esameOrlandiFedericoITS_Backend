@@ -8,7 +8,7 @@ const router = Router();
 
 router.use("/user", userRouter);
 router.use("/base-item", baseItemRouter);
-router.use("/linked-item", linkedItemRouter);
+router.use("/incontri", linkedItemRouter);
 
 router.use(authRouter);
 

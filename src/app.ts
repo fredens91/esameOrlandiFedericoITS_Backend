@@ -8,13 +8,13 @@ import "./utils/auth/auth-handlers";
 
 const app = express();
 
-app.use(cors({
-  origin: [
-  'http://localhost:4200',
-  'https://esameorlandifedericoits-frontend.onrender.com'
-],
-  credentials: true,
-}));
+// app.use(cors({
+//   origin: [
+//   'http://localhost:4200',
+//   'https://esameorlandifedericoits-frontend.onrender.com'
+// ],
+//   credentials: true,
+// }));
 
 app.use(morgan("tiny"));
 app.use(bodyParser.json());

@@ -1,23 +1,50 @@
 import { linkedItemService } from "./linked.item.service";
 import { Request, Response, NextFunction } from "express";
-import { BaseItemModel } from "../base-item/base.item.model";
-import { linkedItemModel } from "./linked.item.model";
-import { TypedRequest } from "../../utils/typed-request.interface";
 import { User } from "../user/user.entity";
 import { UserModel } from "../user/user.model";
+import { linkedItemModel } from "./linked.item.model";
+import { TypedRequest } from "../../utils/typed-request.interface";
+import userService from "../user/user.service";
 
-// export const list = async (
-//   req: TypedRequest<unknown, User>,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const linkedItems = await linkedItemService.list(req.user!);
-//     res.status(200).json(linkedItems);
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+export const create = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { userIdA, userIdB } = req.body;
+
+    if (!userIdA || !userIdB) {
+      return res.status(400).json({ message: "Missing userIdA or userIdB" });
+    }
+
+    const userA = await UserModel.findById(userIdA);
+    const userB = await UserModel.findById(userIdB);
+    if (!userA || !userB) {
+      return res.status(404).json({ message: "User(s) not found" });
+    }
+
+    const existingLinkedItem = await linkedItemModel.findOne({
+      userIdA,
+      userIdB,
+    });
+    if (existingLinkedItem) {
+      return res
+        .status(400)
+        .json({ message: "These users are already linked" });
+    }
+
+    // Creazione
+    const newLinkedItem = await linkedItemService.create(req.user!, {
+      userIdA,
+      userIdB,
+    });
+
+    res.status(201).json(newLinkedItem);
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const list = async (
   req: TypedRequest<unknown, User>,
@@ -33,7 +60,6 @@ export const list = async (
     next(err);
   }
 };
-
 
 export const findOne = async (
   req: Request,
@@ -54,100 +80,7 @@ export const findOne = async (
   }
 };
 
-export const create = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { adminAction, userId, baseItemId } = req.body;
-
-    if (!userId || !baseItemId) {
-      return res.status(400).json({ message: "Missing userId or baseItemId" });
-    }
-
-    const baseItem = await BaseItemModel.findById(baseItemId);
-    if (!baseItem) {
-      return res.status(404).json({ message: "Base item not found" });
-    }
-
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const existingLinkedItem = await linkedItemModel.findOne({
-      userId,
-      baseItemId,
-    });
-    if (existingLinkedItem) {
-      return res
-        .status(400)
-        .json({ message: "User has already linked this item" });
-    }
-
-    const now = new Date();
-    if (now >= baseItem.date) {
-      return res.status(400).json({ message: "Too late to link this item" });
-    }
-
-    // Creazione
-    const newLinkedItem = await linkedItemService.create({
-      userId,
-      baseItemId,
-      adminAction,
-    });
-
-    res.status(201).json(newLinkedItem);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// export const adminAction = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const linkedItemId = req.params.id;
-//     const { adminAction, date, userId, baseItemId } = req.body;
-//     const user = req.user!;
-//     const baseItem = await BaseItemModel.findById(baseItemId); // Usa BaseItemModel qui
-
-//     if (!user) {
-//       return res.status(401).json({ message: "User not authenticated" });
-//     }
-//     if (!baseItem) {
-//       return res.status(404).json({ message: "Base item not found" });
-//     }
-
-//     const userIdToSave = typeof userId === "object" ? userId.id : userId;
-//     const baseItemIdToSave =
-//       typeof baseItemId === "object" ? baseItemId.id : baseItemId;
-
-//     const updatedLinkedItem = await linkedItemService.adminAction(
-//       user,
-//       linkedItemId,
-//       {
-//         adminAction,
-//         date,
-//         userId: userIdToSave,
-//         baseItemId: baseItemIdToSave,
-//       }
-//     );
-
-//     if (!updatedLinkedItem) {
-//       return res.status(404).send("linked item not found");
-//     }
-
-//     res.status(200).json(updatedLinkedItem);
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
-export const updateLinkedItem = async (req: Request, res: Response) => {
+export const update = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
     const updateData = req.body;
@@ -158,7 +91,9 @@ export const updateLinkedItem = async (req: Request, res: Response) => {
     const updated = await linkedItemService.update(user, id, updateData);
 
     if (!updated) {
-      return res.status(403).json({ message: "Non autorizzato o elemento non trovato." });
+      return res
+        .status(403)
+        .json({ message: "Non autorizzato o elemento non trovato." });
     }
 
     return res.status(200).json(updated);
@@ -168,106 +103,26 @@ export const updateLinkedItem = async (req: Request, res: Response) => {
   }
 };
 
-export const getSingleEventSubs = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const baseItemId = req.params.baseItemId;
-
-    if (!baseItemId) {
-      return res.status(400).json({ message: "Missing baseItemId parameter" });
-    }
-
-    const subscriptions = await linkedItemService.getSingleEventSubs(
-      baseItemId
-    );
-
-    res.status(200).json(subscriptions);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// export const update = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const linkedItemId = req.params.id;
-//     const { isAdminAction, date, userId, baseItemId } = req.body;
-//     const user = req.user!;
-//     const baseItem = await BaseItemModel.findById(baseItemId);  // Usa BaseItemModel qui
-
-//     if (!user) {
-//       return res.status(401).json({ message: "User not authenticated" });
-//     }
-//     if (!baseItem) {
-//       return res.status(404).json({ message: "Base item not found" });
-//     }
-
-//     const userIdToSave = typeof userId === 'object' ? userId.id : userId;
-//     const baseItemIdToSave = typeof baseItemId === 'object' ? baseItemId.id : baseItemId;
-
-//     const updatedLinkedItem = await linkedItemService.update(user, linkedItemId, {
-//       isAdminAction,
-//       date,
-//       userId: userIdToSave,
-//       baseItemId: baseItemIdToSave,
-//     });
-
-//     if (!updatedLinkedItem) {
-//       return res.status(404).send("linked item not found");
-//     }
-
-//     res.status(200).json(updatedLinkedItem);
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
 export const remove = async (
-  req: Request,
+  req: TypedRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const linkedItemId = req.params.id;
-    const user = req.user!;
+    const user = req.user;
 
-    const linkedItem = await linkedItemModel.findById(linkedItemId);
-    if (!linkedItem) {
-      return res.status(404).json({ message: "Linked item not found" });
-    }
-
-    if (linkedItem.userId.toString() !== user.id) {
+    if (!user || user.role !== "admin") {
       return res
         .status(403)
-        .json({ message: "You are not allowed to delete this item" });
-    }
-
-    const baseItem = await BaseItemModel.findById(linkedItem.baseItemId);
-    if (!baseItem) {
-      return res.status(404).json({ message: "Base item not found" });
-    }
-
-    const today = new Date();
-    const isSameDate =
-      baseItem.date.getFullYear() === today.getFullYear() &&
-      baseItem.date.getMonth() === today.getMonth() &&
-      baseItem.date.getDate() === today.getDate();
-
-    if (isSameDate) {
-      return res.status(400).json({
-        message: "You cannot delete a linked item scheduled for today",
-      });
+        .json({ message: "Only admins can delete linked items" });
     }
 
     const deleted = await linkedItemService.remove(user, linkedItemId);
     if (!deleted) {
-      return res.status(500).json({ message: "Failed to delete linked item" });
+      return res
+        .status(404)
+        .json({ message: "Linked item not found or already deleted" });
     }
 
     res.status(204).send();

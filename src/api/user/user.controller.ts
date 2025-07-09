@@ -11,6 +11,60 @@ export const list = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+export const listSubscribed = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const users = await userService.listSubscribed();
+    res.status(200).json(users);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const subscribeToTournament = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user!.id; // L'utente corrente
+
+    // Iscrizione al torneo
+    const user = await userService.subscribeToTournament(userId!);
+
+    res.status(200).json({
+      message: "Iscrizione al torneo avvenuta con successo",
+      user,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const changeRoleToAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.user!.id; // L'utente corrente
+
+    // Cambia il ruolo a "admin"
+    const user = await userService.changeRoleToAdmin(userId!);
+
+    res.status(200).json({
+      message: "Ruolo cambiato con successo a 'admin'",
+      user,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 export const me = async (
   req: TypedRequest,
   res: Response,

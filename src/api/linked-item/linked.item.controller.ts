@@ -12,7 +12,14 @@ export const create = async (
   next: NextFunction
 ) => {
   try {
-    const { userIdA, userIdB, scoreA = 0, scoreB = 0, isPlayed = false } = req.body;
+    const {
+      userIdA,
+      userIdB,
+      scoreA = 0,
+      scoreB = 0,
+      isPlayed = false,
+      date // 👈 qui prendiamo anche la data
+    } = req.body;
 
     if (!userIdA || !userIdB) {
       return res.status(400).json({ message: "Missing userIdA or userIdB" });
@@ -34,13 +41,14 @@ export const create = async (
         .json({ message: "These users are already linked" });
     }
 
-    // Creazione
+    // ✅ Passiamo la data anche qui
     const newLinkedItem = await linkedItemService.create(req.user!, {
       userIdA,
       userIdB,
       scoreA,
       scoreB,
-      isPlayed
+      isPlayed,
+      date
     });
 
     res.status(201).json(newLinkedItem);
@@ -64,8 +72,6 @@ export const list = async (
     next(err);
   }
 };
-
-
 
 export const findOne = async (
   req: Request,

@@ -9,7 +9,7 @@ export class LinkedItemService {
       throw new Error("Only admin users can create matches");
     }
 
-    const { userIdA, userIdB, scoreA = 0, scoreB = 0 } = data;
+    const { userIdA, userIdB, scoreA = 0, scoreB = 0, date } = data;
 
     if (!userIdA || !userIdB) {
       throw new Error("userIdA and userIdB are required");
@@ -37,7 +37,7 @@ export class LinkedItemService {
       isPlayed: data.isPlayed ?? false,
       scoreA,
       scoreB,
-      date: new Date(),
+      date: date ? new Date(date) : new Date(), // usa la data dell'utente oppure quella attuale
     };
 
     return await linkedItemModel.create(newLinkedItem);
